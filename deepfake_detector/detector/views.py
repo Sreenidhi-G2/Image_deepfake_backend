@@ -8,25 +8,35 @@ import tempfile
 import requests
 import tensorflow as tf
 
-# Google Drive model ID
+# Google Drive model ID (replace with your actual model ID)
 MODEL_ID = "1mX6nXgtNNJmK0-jbBZeiMGxvIJSLqp8u"
 MODEL_PATH = "deepfake_detector/models/deepfake_cnn_model.h5"
 
 def download_model_from_drive():
-    """Download model from Google Drive if not available locally."""
-    if not os.path.exists(MODEL_PATH):
-        print("Downloading model from Google Drive...")
-        URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
-        response = requests.get(URL, stream=True)
+    """Download model from Google Drive using proper chunk handling."""
+    if os.path.exists(MODEL_PATH):
+        print("✅ Model already exists.")
+        return
 
-        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    print("🚀 Downloading model from Google Drive...")
+    
+    # Step 1: Get confirmation token
+    session = requests.Session()
+    URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
+    response = session.get(URL, stream=True)
+    for key, value in response.cookies.items():
+        if key.startswith("download_warning"):
+            URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}&confirm={value}"
+            break
 
-        with open(MODEL_PATH, "wb") as file:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    file.write(chunk)
+    # Step 2: Download model in chunks
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    with session.get(URL, stream=True) as response, open(MODEL_PATH, "wb") as file:
+        for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
+            if chunk:
+                file.write(chunk)
 
-        print("Download complete!")
+    print("✅ Model download complete!")
 
 # Ensure model is available
 download_model_from_drive()
