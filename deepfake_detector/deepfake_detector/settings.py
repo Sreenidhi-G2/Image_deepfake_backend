@@ -25,11 +25,16 @@ SECRET_KEY = 'django-insecure-dk0=fb+36t2e+42k_(q(wstwk#pk_cif9kk$al^*ndiq+y5gwx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "image-deepfake-backend.onrender.com",  # Your backend domain on Render
+    "localhost",  # Allow local development
+    "127.0.0.1",  # Allow local testing
+]
 CORS_ALLOWED_ORIGINS = [
     "https://image-deepfake.vercel.app", 
     "https://image-deepfake-backend.onrender.com",
     "http://localhost:5173",  # For local development
+
 ]
 
 
