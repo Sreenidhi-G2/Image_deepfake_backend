@@ -4,7 +4,32 @@ from rest_framework.response import Response
 from rest_framework import status
 from .utils import predict_deepfake
 import os
-import tempfile  # Import the tempfile module
+import tempfile
+import requests
+import tensorflow as tf
+
+# Google Drive model ID
+MODEL_ID = "1mX6nXgtNNJmK0-jbBZeiMGxvIJSLqp8u"
+MODEL_PATH = "deepfake_detector/models/deepfake_cnn_model.h5"
+
+def download_model_from_drive():
+    """Download model from Google Drive if not available locally."""
+    if not os.path.exists(MODEL_PATH):
+        print("Downloading model from Google Drive...")
+        URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
+        response = requests.get(URL, stream=True)
+
+        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+
+        with open(MODEL_PATH, "wb") as file:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    file.write(chunk)
+
+        print("Download complete!")
+
+# Ensure model is available
+download_model_from_drive()
 
 class DeepfakeDetectionAPI(APIView):
     parser_classes = [MultiPartParser]
